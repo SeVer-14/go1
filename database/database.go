@@ -19,18 +19,15 @@ func Connect() error {
 }
 
 func Migrate() error {
-	// Получаем *sql.DB из gorm
 	sqlDB, err := DB.DB()
 	if err != nil {
 		return err
 	}
 
-	// Устанавливаем dialect postgres
 	if err := goose.SetDialect("postgres"); err != nil {
 		return err
 	}
 
-	// Запускаем миграции
 	dir := "migrations"
 	return goose.Up(sqlDB, dir)
 }
