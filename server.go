@@ -2,10 +2,12 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go1/controller"
 	"go1/database"
 	"go1/service"
 	"log"
+	"os"
 )
 
 var (
@@ -14,7 +16,9 @@ var (
 )
 
 func main() {
-
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	// БД и миграции
 	if err := database.Connect(); err != nil {
 		log.Fatal("Failed to connect to database:", err)
@@ -22,7 +26,9 @@ func main() {
 	if err := database.Migrate(); err != nil {
 		log.Fatal("Failed to run migrations:", err)
 	}
-
+	if os.Getenv("SERVER_MODE") == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	server := gin.Default()
 
 	server.GET("/products", func(ctx *gin.Context) {
