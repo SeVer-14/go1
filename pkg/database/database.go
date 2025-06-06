@@ -32,16 +32,17 @@ func Connect() error {
 	DB = db
 	return nil
 }
+
 func Migrate() error {
 	sqlDB, err := DB.DB()
 	if err != nil {
 		return err
 	}
-
-	if err := goose.SetDialect("postgres"); err != nil {
+	dialect := os.Getenv("MIGRATIONS_DIALECT")
+	if err := goose.SetDialect(dialect); err != nil {
 		return err
 	}
 
-	dir := "migrations"
+	dir := os.Getenv("MIGRATIONS_DIR")
 	return goose.Up(sqlDB, dir)
 }
