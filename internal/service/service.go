@@ -18,6 +18,6 @@ func NewServices(deps Deps) *Services {
 	return &Services{
 		Product: NewProductService(deps.Repos.Product),
 		Cart:    NewCartService(deps.Repos.Cart, deps.Repos.Product),
-		Order:   NewOrderService(deps.Repos.Order),
+		Order:   NewOrderService(deps.Repos.Order, deps.Repos.Cart, deps.Repos.Product),
 	}
 }

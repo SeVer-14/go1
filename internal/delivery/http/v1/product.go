@@ -3,24 +3,10 @@ package v1
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"go1/internal/entity"
+	dto "go1/internal/DTO"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
-)
-
-type (
-	createProductInput struct {
-		ProductID int     `json:"ProductID" binding:"required"`
-		Title     string  `json:"title" binding:"required"`
-		Price     float64 `json:"price" binding:"required"`
-	}
-
-	updateProductInput struct {
-		ProductID int     `json:"ProductID" binding:"required"`
-		Title     string  `json:"title" binding:"required"`
-		Price     float64 `json:"price" binding:"required"`
-	}
 )
 
 func (h *Handler) initProductRoutes(api *gin.RouterGroup) {
@@ -43,20 +29,14 @@ func (h *Handler) getAllProducts(c *gin.Context) {
 }
 
 func (h *Handler) createProduct(c *gin.Context) {
-	var input createProductInput
+	var input dto.ProductDTO
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	product := entity.Product{
-		ProductID: input.ProductID,
-		Title:     input.Title,
-		Price:     input.Price,
-	}
-
-	createdProduct, err := h.services.Product.CreateProduct(product)
+	createdProduct, err := h.services.Product.CreateProduct(input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -71,19 +51,13 @@ func (h *Handler) updateProduct(c *gin.Context) {
 		return
 	}
 
-	var input updateProductInput
+	var input dto.ProductDTO
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	product := entity.Product{
-		ProductID: input.ProductID,
-		Title:     input.Title,
-		Price:     input.Price,
-	}
-
-	updatedProduct, err := h.services.Product.UpdateProduct(uint(id), product)
+	updatedProduct, err := h.services.Product.UpdateProduct(uint(id), input)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "product not found"})

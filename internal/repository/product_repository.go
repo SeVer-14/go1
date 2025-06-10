@@ -1,6 +1,7 @@
 package repository
 
 import (
+	dto "go1/internal/DTO"
 	"go1/internal/entity"
 	"gorm.io/gorm"
 )
@@ -15,7 +16,7 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 
 func (r *ProductRepository) GetAll() ([]entity.Product, error) {
 	var products []entity.Product
-	if err := r.db.Find(&products).Error; err != nil {
+	if err := r.db.Table("products").Find(&products).Error; err != nil {
 		return nil, err
 	}
 	return products, nil
@@ -25,7 +26,7 @@ func (r *ProductRepository) Create(product *entity.Product) error {
 	return r.db.Create(product).Error
 }
 
-func (r *ProductRepository) Update(product *entity.Product) error {
+func (r *ProductRepository) Update(product *dto.ProductDTO) error {
 	return r.db.Save(product).Error
 }
 
@@ -33,9 +34,9 @@ func (r *ProductRepository) Delete(id uint) error {
 	return r.db.Delete(&entity.Product{}, id).Error
 }
 
-func (r *ProductRepository) GetByID(id uint) (*entity.Product, error) {
-	var product entity.Product
-	if err := r.db.First(&product, id).Error; err != nil {
+func (r *ProductRepository) GetByID(id uint) (*dto.ProductDTO, error) {
+	var product dto.ProductDTO
+	if err := r.db.Table("products").First(&product, id).Error; err != nil {
 		return nil, err
 	}
 	return &product, nil

@@ -14,7 +14,7 @@ func NewCartRepository(db *gorm.DB) *CartRepository {
 	return &CartRepository{db: db}
 }
 
-func (r *CartRepository) AddItem(userID uint, productID uint, quantity int) (*entity.CartItem, error) {
+func (r *CartRepository) AddItem(cartID uint, productID uint, quantity int) (*entity.CartItem, error) {
 	tx := r.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -29,13 +29,13 @@ func (r *CartRepository) AddItem(userID uint, productID uint, quantity int) (*en
 	}
 
 	var cart entity.Cart
-	if err := tx.Where("user_id = ?", userID).FirstOrCreate(&cart, entity.Cart{UserID: userID}).Error; err != nil {
+	if err := tx.Where("cart_Id = ?", cartID).FirstOrCreate(&cart, entity.Cart{CartID: cartID}).Error; err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
 	var item entity.CartItem
-	if err := tx.Where("cart_id = ? AND product_id = ?", cart.ID, productID).First(&item).Error; err == nil {
+	if err := tx.Where("cart_Id = ? AND product_Id = ?", cart.CartID, productID).First(&item).Error; err == nil {
 		item.Quantity += quantity
 		if err := tx.Save(&item).Error; err != nil {
 			tx.Rollback()
@@ -43,7 +43,7 @@ func (r *CartRepository) AddItem(userID uint, productID uint, quantity int) (*en
 		}
 	} else {
 		item = entity.CartItem{
-			CartID:    cart.ID,
+			CartID:    cart.CartID,
 			ProductID: productID,
 			Quantity:  quantity,
 		}
@@ -60,19 +60,25 @@ func (r *CartRepository) AddItem(userID uint, productID uint, quantity int) (*en
 	return &item, nil
 }
 
-func (r *CartRepository) GetCart(userID uint) (*entity.Cart, error) {
-	var cart entity.Cart
+func (r *CartRepository) GetCart(cartID uint) ([]entity.CartItem, error) {
+	var items []entity.CartItem
 	err := r.db.
-		Preload("CartItems.Product"). // Загружаем связанные продукты
-		Where("user_id = ?", userID).
-		First(&cart).Error
-	return &cart, err
+		Where("cart_Id = ?", cartID).
+		Find(&items).Error
+	return items, err
 }
 
-func (r *CartRepository) RemoveItem(userID uint, productID uint) error {
+func (r *CartRepository) RemoveItem(cartID uint, productID uint) error {
 	var cart entity.Cart
-	if err := r.db.Where("user_id = ?", userID).First(&cart).Error; err != nil {
+	if err := r.db.Where("cart_Id = ?", cartID).First(&cart).Error; err != nil {
 		return err
 	}
-	return r.db.Where("cart_id = ? AND product_id = ?", cart.ID, productID).Delete(&entity.CartItem{}).Error
+	return r.db.Where("cart_Id = ? AND product_Id = ?", cart.ID, productID).Delete(&entity.CartItem{}).Error
+}
+
+func (r *CartRepository) ClearCart(cartID uint) error {
+	if err := r.db.Where("cart_Id = ?", cartID).Delete(&entity.CartItem{}).Error; err != nil {
+		return err
+	}
+	return nil
 }

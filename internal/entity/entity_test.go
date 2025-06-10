@@ -11,7 +11,7 @@ import (
 func TestCartModel(t *testing.T) {
 	type fields struct {
 		ID        uint
-		UserID    uint
+		cartId    uint
 		CreatedAt time.Time
 		UpdatedAt time.Time
 		DeletedAt gorm.DeletedAt
@@ -22,33 +22,33 @@ func TestCartModel(t *testing.T) {
 		fields  fields
 		wantErr bool
 	}{
-		{"Valid data", fields{ID: 1, UserID: 1}, false},
-		{"Zero user ID", fields{ID: 1, UserID: 0}, true},
+		{"Valid data", fields{ID: 1, cartId: 1}, false},
+		{"Zero cart ID", fields{ID: 1, cartId: 0}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cart := &Cart{
 				Model:     gorm.Model{ID: tt.fields.ID},
-				UserID:    tt.fields.UserID,
+				cartId:    tt.fields.cartId,
 				CartItems: tt.fields.CartItems,
 			}
-			if got := cart.UserID; got != tt.fields.UserID {
-				t.Errorf("UserID is wrong, expected: %d, actual: %d", tt.fields.UserID, got)
+			if got := cart.cartId; got != tt.fields.cartId {
+				t.Errorf("cartId is wrong, expected: %d, actual: %d", tt.fields.cartId, got)
 			}
 		})
 	}
 }
 
 func TestCart_JSON(t *testing.T) {
-	cart := Cart{UserID: 1}
+	cart := Cart{cartId: 1}
 	data, err := json.Marshal(cart)
 	assert.NoError(t, err)
-	assert.Contains(t, string(data), `"user_id":1`)
+	assert.Contains(t, string(data), `"cartId":1`)
 }
 
 func BenchmarkCartModel(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = &Cart{UserID: uint(i)}
+		_ = &Cart{cartId: uint(i)}
 	}
 }
 
@@ -93,7 +93,7 @@ func TestOrderModel(t *testing.T) {
 		{
 			name: "Valid order",
 			order: Order{
-				UserID: 1,
+				cartId: 1,
 				Status: "pending",
 				Total:  100.50,
 			},
@@ -103,7 +103,7 @@ func TestOrderModel(t *testing.T) {
 		{
 			name: "Invalid status",
 			order: Order{
-				UserID: 1,
+				cartId: 1,
 				Status: "invalid_status",
 				Total:  100.50,
 			},
@@ -188,25 +188,25 @@ func TestOrderItemModel(t *testing.T) {
 func TestOrderJSON(t *testing.T) {
 	t.Run("Marshal Order", func(t *testing.T) {
 		order := Order{
-			UserID: 1,
+			cartId: 1,
 			Status: "completed",
 			Total:  99.99,
 		}
 
 		data, err := json.Marshal(order)
 		assert.NoError(t, err)
-		assert.Contains(t, string(data), `"user_id":1`)
+		assert.Contains(t, string(data), `"cartId":1`)
 		assert.Contains(t, string(data), `"status":"completed"`)
 		assert.Contains(t, string(data), `"total":99.99`)
 	})
 
 	t.Run("Unmarshal Order", func(t *testing.T) {
-		jsonStr := `{"user_id":2,"status":"pending","total":50.50}`
+		jsonStr := `{"cartId":2,"status":"pending","total":50.50}`
 		var order Order
 		err := json.Unmarshal([]byte(jsonStr), &order)
 
 		assert.NoError(t, err)
-		assert.Equal(t, uint(2), order.UserID)
+		assert.Equal(t, uint(2), order.cartId)
 		assert.Equal(t, "pending", order.Status)
 		assert.Equal(t, 50.50, order.Total)
 	})
