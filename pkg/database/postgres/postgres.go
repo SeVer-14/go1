@@ -37,5 +37,9 @@ func NewPostgresDB(cfg config.PostgresConfig) (*gorm.DB, error) {
 		}
 	}
 
+	//if err := migrations.RunMigrations(db, "postgres", "./migrations"); err != nil {
+	//	log.Fatalf("failed to apply migrations: %v", err)
+	//}
+
 	return db, nil
 }

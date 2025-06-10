@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
+	dto "go1/internal/DTO"
 	"net/http"
 	"strconv"
 )
@@ -9,15 +10,15 @@ import (
 func (h *Handler) initCartRoutes(api *gin.RouterGroup) {
 	cart := api.Group("/cart")
 	{
-		cart.GET("/:user_id", h.getCart)
-		cart.POST("/:user_id/items", h.addToCart)
-		cart.DELETE("/:user_id/items/:product_id", h.removeFromCart)
+		cart.GET("/:cartId", h.getCart)
+		cart.POST("/:cartId/items", h.addToCart)
+		cart.DELETE("/:cartId/items/:productId", h.removeFromCart)
 	}
 }
 func (h *Handler) getCart(c *gin.Context) {
-	userID, _ := strconv.Atoi(c.Param("user_id"))
+	cartID, _ := strconv.Atoi(c.Param("cartId"))
 
-	cart, err := h.services.Cart.GetCart(uint(userID))
+	cart, err := h.services.Cart.GetCart(uint(cartID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -27,19 +28,16 @@ func (h *Handler) getCart(c *gin.Context) {
 }
 
 func (h *Handler) addToCart(c *gin.Context) {
-	userID, _ := strconv.Atoi(c.Param("user_id"))
+	cartID, _ := strconv.Atoi(c.Param("cartId"))
 
-	var input struct {
-		ProductID uint `json:"product_id" binding:"required"`
-		Quantity  int  `json:"quantity" binding:"min=1"`
-	}
+	var input dto.AddToCartDTO
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	item, err := h.services.Cart.AddToCart(uint(userID), input.ProductID, input.Quantity)
+	item, err := h.services.Cart.AddToCart(uint(cartID), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -52,10 +50,10 @@ func (h *Handler) addToCart(c *gin.Context) {
 }
 
 func (h *Handler) removeFromCart(c *gin.Context) {
-	userID, _ := strconv.Atoi(c.Param("user_id"))
-	productID, _ := strconv.Atoi(c.Param("product_id"))
+	cartID, _ := strconv.Atoi(c.Param("cartId"))
+	productID, _ := strconv.Atoi(c.Param("productId"))
 
-	if err := h.services.Cart.RemoveFromCart(uint(userID), uint(productID)); err != nil {
+	if err := h.services.Cart.RemoveFromCart(uint(cartID), uint(productID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
