@@ -5,11 +5,6 @@ type AddToCartDTO struct {
 	Quantity  int  `json:"quantity" binding:"min=1"`
 }
 
-//type UpdateOrderStatusDTO struct {
-//	OrderID int    `json:"orderId" binding:"required"`
-//	Status  string `json:"status" binding:"required,oneof=pending processing completed cancelled"`
-//}
-
 type ProductDTO struct {
 	ID        uint    `json:"id"`
 	ProductID int     `json:"productId" binding:"required"`

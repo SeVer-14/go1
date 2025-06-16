@@ -1,0 +1,157 @@
+definitions:
+  dto.ProductDTO:
+    properties:
+      id:
+        type: integer
+      price:
+        type: number
+      productId:
+        type: integer
+      title:
+        type: string
+    required:
+    - price
+    - productId
+    - title
+    type: object
+info:
+  contact: {}
+paths:
+  /api/products:
+    get:
+      description: Возвращает список всех продуктов
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            items:
+              $ref: '#/definitions/dto.ProductDTO'
+            type: array
+        "500":
+          description: Ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить все продукты
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новый продукт
+      parameters:
+      - description: Данные продукта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProductDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Продукт создан
+          schema:
+            $ref: '#/definitions/dto.ProductDTO'
+        "400":
+          description: Неверный запрос
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать продукт
+      tags:
+      - products
+  /api/products/{id}:
+    delete:
+      description: Удаляет продукт по ID
+      parameters:
+      - description: ID продукта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Продукт удалён
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Неверный ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Продукт не найден
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить продукт
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Обновляет существующий продукт
+      parameters:
+      - description: ID продукта
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новые данные продукта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Продукт обновлён
+          schema:
+            $ref: '#/definitions/dto.ProductDTO'
+        "400":
+          description: Неверный ID или данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Продукт не найден
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить продукт
+      tags:
+      - products
+swagger: "2.0"

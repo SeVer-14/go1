@@ -29,26 +29,26 @@ func TestCartModel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cart := &Cart{
 				Model:     gorm.Model{ID: tt.fields.ID},
-				cartId:    tt.fields.cartId,
+				CartID:    tt.fields.cartId,
 				CartItems: tt.fields.CartItems,
 			}
-			if got := cart.cartId; got != tt.fields.cartId {
-				t.Errorf("cartId is wrong, expected: %d, actual: %d", tt.fields.cartId, got)
+			if got := cart.CartID; got != tt.fields.cartId {
+				t.Errorf("CartID is wrong, expected: %d, actual: %d", tt.fields.cartId, got)
 			}
 		})
 	}
 }
 
 func TestCart_JSON(t *testing.T) {
-	cart := Cart{cartId: 1}
+	cart := Cart{CartID: 101}
 	data, err := json.Marshal(cart)
 	assert.NoError(t, err)
-	assert.Contains(t, string(data), `"cartId":1`)
+	assert.Contains(t, string(data), `"CartID":101`)
 }
 
 func BenchmarkCartModel(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = &Cart{cartId: uint(i)}
+		_ = &Cart{CartID: uint(i)}
 	}
 }
 
@@ -93,7 +93,7 @@ func TestOrderModel(t *testing.T) {
 		{
 			name: "Valid order",
 			order: Order{
-				cartId: 1,
+				CartID: 1,
 				Status: "pending",
 				Total:  100.50,
 			},
@@ -103,7 +103,7 @@ func TestOrderModel(t *testing.T) {
 		{
 			name: "Invalid status",
 			order: Order{
-				cartId: 1,
+				CartID: 1,
 				Status: "invalid_status",
 				Total:  100.50,
 			},
@@ -188,25 +188,25 @@ func TestOrderItemModel(t *testing.T) {
 func TestOrderJSON(t *testing.T) {
 	t.Run("Marshal Order", func(t *testing.T) {
 		order := Order{
-			cartId: 1,
+			CartID: 1,
 			Status: "completed",
 			Total:  99.99,
 		}
 
 		data, err := json.Marshal(order)
 		assert.NoError(t, err)
-		assert.Contains(t, string(data), `"cartId":1`)
-		assert.Contains(t, string(data), `"status":"completed"`)
-		assert.Contains(t, string(data), `"total":99.99`)
+		assert.Contains(t, string(data), `"CartID":1`)
+		assert.Contains(t, string(data), `"Status":"completed"`)
+		assert.Contains(t, string(data), `"Total":99.99`)
 	})
 
 	t.Run("Unmarshal Order", func(t *testing.T) {
-		jsonStr := `{"cartId":2,"status":"pending","total":50.50}`
+		jsonStr := `{"CartID":2,"Status":"pending","Total":50.50}`
 		var order Order
 		err := json.Unmarshal([]byte(jsonStr), &order)
 
 		assert.NoError(t, err)
-		assert.Equal(t, uint(2), order.cartId)
+		assert.Equal(t, uint(2), order.CartID)
 		assert.Equal(t, "pending", order.Status)
 		assert.Equal(t, 50.50, order.Total)
 	})
@@ -224,5 +224,26 @@ func TestOrderStatusValidation(t *testing.T) {
 	t.Run("Invalid status", func(t *testing.T) {
 		order := Order{Status: "invalid"}
 		assert.NotContains(t, validStatuses, order.Status)
+	})
+
+}
+
+func TestOrderRelationships(t *testing.T) {
+
+	t.Run("OrderItem with product", func(t *testing.T) {
+		item := Product{
+			ProductID: 57,
+			Title:     "Test Product",
+			Price:     9.99,
+		}
+		orderItem := OrderItem{
+			OrderID:   1,
+			ProductID: 57,
+			Quantity:  10,
+		}
+		orderItem.Price = item.Price
+
+		assert.Equal(t, 99.9, float64(orderItem.Quantity)*item.Price)
+		assert.Equal(t, "Test Product", item.Title)
 	})
 }

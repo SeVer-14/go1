@@ -7,6 +7,11 @@ import (
 	"go1/internal/repository"
 )
 
+type ProductServiceInterface interface {
+	GetAllProducts() ([]entity.Product, error)
+	// другие методы
+}
+
 type ProductService struct {
 	repo *repository.ProductRepository
 }
